@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Resume</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="download-section">
+            <a href="resume.pdf" download class="download-btn">Download PDF</a>
+        </div>
+
+        <div class="resume">
+            <header class="resume-header">
+                <h1>Your Name</h1>
+                <div class="contact-info">
+                    <span>email@example.com</span>
+                    <span>|</span>
+                    <span>(123) 456-7890</span>
+                    <span>|</span>
+                    <span>linkedin.com/in/yourprofile</span>
+                    <span>|</span>
+                    <span>github.com/yourusername</span>
+                </div>
+            </header>
+
+            <section class="resume-section">
+                <h2>Professional Summary</h2>
+                <p>Brief summary of your professional background, key skills, and career objectives. Keep this concise and impactful, highlighting your most relevant qualifications.</p>
+            </section>
+
+            <section class="resume-section">
+                <h2>Experience</h2>
+
+                <div class="experience-item">
+                    <div class="experience-header">
+                        <h3>Job Title</h3>
+                        <span class="date">Month Year - Present</span>
+                    </div>
+                    <div class="company">Company Name | Location</div>
+                    <ul>
+                        <li>Key achievement or responsibility with measurable impact</li>
+                        <li>Another significant contribution or project</li>
+                        <li>Technical skills or tools utilized</li>
+                    </ul>
+                </div>
+
+                <div class="experience-item">
+                    <div class="experience-header">
+                        <h3>Previous Job Title</h3>
+                        <span class="date">Month Year - Month Year</span>
+                    </div>
+                    <div class="company">Previous Company | Location</div>
+                    <ul>
+                        <li>Notable achievement with quantifiable results</li>
+                        <li>Leadership or collaboration experience</li>
+                        <li>Process improvements or innovations</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section class="resume-section">
+                <h2>Education</h2>
+
+                <div class="education-item">
+                    <div class="experience-header">
+                        <h3>Degree Name</h3>
+                        <span class="date">Graduation Year</span>
+                    </div>
+                    <div class="company">University Name | Location</div>
+                    <p>Relevant coursework, honors, or GPA (if recent graduate)</p>
+                </div>
+            </section>
+
+            <section class="resume-section">
+                <h2>Skills</h2>
+                <div class="skills-grid">
+                    <div class="skill-category">
+                        <strong>Programming:</strong> Language1, Language2, Language3
+                    </div>
+                    <div class="skill-category">
+                        <strong>Technologies:</strong> Framework1, Framework2, Tool1, Tool2
+                    </div>
+                    <div class="skill-category">
+                        <strong>Other:</strong> Skill1, Skill2, Skill3
+                    </div>
+                </div>
+            </section>
+
+            <section class="resume-section">
+                <h2>Projects</h2>
+
+                <div class="project-item">
+                    <div class="experience-header">
+                        <h3>Project Name</h3>
+                        <span class="date">Year</span>
+                    </div>
+                    <p>Brief description of the project, technologies used, and outcomes achieved.</p>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>Last updated: <span id="last-updated"></span></p>
+    </footer>
+
+    <script>
+        // Display last updated date
+        document.getElementById('last-updated').textContent = new Date().toLocaleDateString();
+    </script>
+</body>
+</html>
