@@ -5,111 +5,175 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Resume</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
     <div class="container">
-        <div class="download-section">
-            <a href="resume.pdf" download class="download-btn">Download PDF</a>
+        <!-- PDF Viewer Toolbar -->
+        <div class="pdf-toolbar">
+            <div class="toolbar-left">
+                <button id="prev-btn" class="toolbar-btn" title="Previous page">
+                    <span class="arrow">←</span>
+                </button>
+                <div class="page-info">
+                    <input type="number" id="page-input" min="1" value="1" class="page-input" title="Go to page">
+                    <span class="page-separator">/</span>
+                    <span id="total-pages" class="total-pages">1</span>
+                </div>
+                <button id="next-btn" class="toolbar-btn" title="Next page">
+                    <span class="arrow">→</span>
+                </button>
+            </div>
+
+            <div class="toolbar-center">
+                <span class="filename">resume.pdf</span>
+            </div>
+
+            <div class="toolbar-right">
+                <button id="zoom-out-btn" class="toolbar-btn" title="Zoom out">
+                    <span>−</span>
+                </button>
+                <select id="zoom-select" class="zoom-select" title="Zoom level">
+                    <option value="50">50%</option>
+                    <option value="75">75%</option>
+                    <option value="100" selected>100%</option>
+                    <option value="125">125%</option>
+                    <option value="150">150%</option>
+                    <option value="200">200%</option>
+                </select>
+                <button id="zoom-in-btn" class="toolbar-btn" title="Zoom in">
+                    <span>+</span>
+                </button>
+                <a href="resume.pdf" download class="toolbar-btn download-icon" title="Download PDF">
+                    <span>⬇</span>
+                </a>
+            </div>
         </div>
 
-        <div class="resume">
-            <header class="resume-header">
-                <h1>Your Name</h1>
-                <div class="contact-info">
-                    <span>email@example.com</span>
-                    <span>|</span>
-                    <span>(123) 456-7890</span>
-                    <span>|</span>
-                    <span>linkedin.com/in/yourprofile</span>
-                    <span>|</span>
-                    <span>github.com/yourusername</span>
-                </div>
-            </header>
-
-            <section class="resume-section">
-                <h2>Professional Summary</h2>
-                <p>Brief summary of your professional background, key skills, and career objectives. Keep this concise and impactful, highlighting your most relevant qualifications.</p>
-            </section>
-
-            <section class="resume-section">
-                <h2>Experience</h2>
-
-                <div class="experience-item">
-                    <div class="experience-header">
-                        <h3>Job Title</h3>
-                        <span class="date">Month Year - Present</span>
-                    </div>
-                    <div class="company">Company Name | Location</div>
-                    <ul>
-                        <li>Key achievement or responsibility with measurable impact</li>
-                        <li>Another significant contribution or project</li>
-                        <li>Technical skills or tools utilized</li>
-                    </ul>
-                </div>
-
-                <div class="experience-item">
-                    <div class="experience-header">
-                        <h3>Previous Job Title</h3>
-                        <span class="date">Month Year - Month Year</span>
-                    </div>
-                    <div class="company">Previous Company | Location</div>
-                    <ul>
-                        <li>Notable achievement with quantifiable results</li>
-                        <li>Leadership or collaboration experience</li>
-                        <li>Process improvements or innovations</li>
-                    </ul>
-                </div>
-            </section>
-
-            <section class="resume-section">
-                <h2>Education</h2>
-
-                <div class="education-item">
-                    <div class="experience-header">
-                        <h3>Degree Name</h3>
-                        <span class="date">Graduation Year</span>
-                    </div>
-                    <div class="company">University Name | Location</div>
-                    <p>Relevant coursework, honors, or GPA (if recent graduate)</p>
-                </div>
-            </section>
-
-            <section class="resume-section">
-                <h2>Skills</h2>
-                <div class="skills-grid">
-                    <div class="skill-category">
-                        <strong>Programming:</strong> Language1, Language2, Language3
-                    </div>
-                    <div class="skill-category">
-                        <strong>Technologies:</strong> Framework1, Framework2, Tool1, Tool2
-                    </div>
-                    <div class="skill-category">
-                        <strong>Other:</strong> Skill1, Skill2, Skill3
-                    </div>
-                </div>
-            </section>
-
-            <section class="resume-section">
-                <h2>Projects</h2>
-
-                <div class="project-item">
-                    <div class="experience-header">
-                        <h3>Project Name</h3>
-                        <span class="date">Year</span>
-                    </div>
-                    <p>Brief description of the project, technologies used, and outcomes achieved.</p>
-                </div>
-            </section>
+        <!-- PDF Canvas Container -->
+        <div id="pdf-canvas-container" class="pdf-canvas-container">
+            <div id="pdf-error" class="pdf-error" style="display: none;"></div>
+            <canvas id="pdf-canvas" class="pdf-canvas"></canvas>
         </div>
     </div>
 
-    <footer class="footer">
-        <p>Last updated: <span id="last-updated"></span></p>
-    </footer>
-
     <script>
-        // Display last updated date
-        document.getElementById('last-updated').textContent = new Date().toLocaleDateString();
+        // Set up PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // State
+        let pdfDoc = null;
+        let currentPage = 1;
+        let currentScale = 1;
+
+        const pdfPath = 'resume.pdf';
+        const canvas = document.getElementById('pdf-canvas');
+        const ctx = canvas.getContext('2d');
+        const pageInput = document.getElementById('page-input');
+        const totalPagesSpan = document.getElementById('total-pages');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const zoomSelect = document.getElementById('zoom-select');
+        const zoomInBtn = document.getElementById('zoom-in-btn');
+        const zoomOutBtn = document.getElementById('zoom-out-btn');
+        const errorDiv = document.getElementById('pdf-error');
+
+        // Load PDF document
+        pdfjsLib.getDocument(pdfPath).promise.then(pdf => {
+            pdfDoc = pdf;
+            totalPagesSpan.textContent = pdf.numPages;
+            pageInput.max = pdf.numPages;
+            renderPage(currentPage);
+        }).catch(error => {
+            showError('Error loading PDF: ' + error.message);
+        });
+
+        // Render current page
+        function renderPage(pageNum) {
+            if (!pdfDoc) return;
+
+            pdfDoc.getPage(pageNum).then(page => {
+                const scale = currentScale;
+                const viewport = page.getViewport({ scale });
+
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+
+                const renderContext = {
+                    canvasContext: ctx,
+                    viewport: viewport
+                };
+
+                page.render(renderContext).promise.catch(error => {
+                    showError('Error rendering page: ' + error.message);
+                });
+            }).catch(error => {
+                showError('Error loading page: ' + error.message);
+            });
+        }
+
+        // Navigation handlers
+        prevBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                pageInput.value = currentPage;
+                renderPage(currentPage);
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentPage < pdfDoc.numPages) {
+                currentPage++;
+                pageInput.value = currentPage;
+                renderPage(currentPage);
+            }
+        });
+
+        pageInput.addEventListener('change', () => {
+            let page = parseInt(pageInput.value);
+            if (isNaN(page) || page < 1) page = 1;
+            if (page > pdfDoc.numPages) page = pdfDoc.numPages;
+            currentPage = page;
+            pageInput.value = currentPage;
+            renderPage(currentPage);
+        });
+
+        // Zoom handlers
+        zoomSelect.addEventListener('change', () => {
+            const zoomLevel = parseInt(zoomSelect.value) / 100;
+            currentScale = zoomLevel;
+            renderPage(currentPage);
+        });
+
+        zoomInBtn.addEventListener('click', () => {
+            const currentZoom = parseInt(zoomSelect.value);
+            const options = [50, 75, 100, 125, 150, 200];
+            const nextZoom = options.find(z => z > currentZoom) || 200;
+            zoomSelect.value = nextZoom;
+            currentScale = nextZoom / 100;
+            renderPage(currentPage);
+        });
+
+        zoomOutBtn.addEventListener('click', () => {
+            const currentZoom = parseInt(zoomSelect.value);
+            const options = [50, 75, 100, 125, 150, 200];
+            const nextZoom = [...options].reverse().find(z => z < currentZoom) || 50;
+            zoomSelect.value = nextZoom;
+            currentScale = nextZoom / 100;
+            renderPage(currentPage);
+        });
+
+        // Error handling
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') prevBtn.click();
+            if (e.key === 'ArrowRight') nextBtn.click();
+        });
     </script>
 </body>
 </html>
